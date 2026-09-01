@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jornal++ — STEM & Robótica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EEF2F6;
+    --paper-line: #C7D2DE;
+    --ink: #172436;
+    --ink-soft: #4C5C70;
+    --copper: #C97A2E;
+    --copper-soft: #F0DCC0;
+    --pcb-green: #2E6B52;
+    --white: #FFFFFF;
+    --radius: 2px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.6;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+  a{color:inherit;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  .marked{position:relative;}
+  .marked::before, .marked::after{
+    content:""; position:absolute; width:16px; height:16px;
+    border:1.5px solid var(--ink); opacity:.35;
+  }
+  .marked::before{top:-1px; left:-1px; border-right:none; border-bottom:none;}
+  .marked::after{bottom:-1px; right:-1px; border-left:none; border-top:none;}
+
+  header{padding:28px 0 24px; border-bottom:1.5px solid var(--ink); background:var(--paper); position:sticky; top:0; z-index:10;}
+  .nav{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand-mark{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--copper); border:1px solid var(--copper); padding:2px 6px; border-radius:var(--radius); letter-spacing:.04em;}
+  .brand h1{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:26px; letter-spacing:-0.01em;}
+  .brand p{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  nav ul{display:flex; gap:26px; list-style:none; font-size:14px; font-weight:500;}
+  nav a{text-decoration:none; border-bottom:1px solid transparent; padding-bottom:2px; transition:border-color .15s;}
+  nav a:hover{border-color:var(--copper);}
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{outline:2px solid var(--copper); outline-offset:2px;}
+
+  .hero{padding:64px 0 56px;}
+  .hero-grid{display:grid; grid-template-columns: 1.15fr 0.85fr; gap:48px; align-items:center;}
+  @media (max-width:820px){ .hero-grid{grid-template-columns:1fr; gap:32px;} }
+  .eyebrow-line{display:flex; align-items:center; gap:10px; margin-bottom:18px; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--pcb-green);}
+  .eyebrow-line .dash{width:32px; height:1px; background:var(--pcb-green);}
+  .hero h2{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:clamp(34px, 5vw, 52px); line-height:1.05; letter-spacing:-0.015em; max-width:14ch;}
+  .hero p.lede{margin-top:20px; font-size:17px; color:var(--ink-soft); max-width:46ch;}
+  .hero-actions{margin-top:28px; display:flex; gap:14px; flex-wrap:wrap;}
+  .btn{font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:14px; padding:12px 20px; border-radius:var(--radius); text-decoration:none; display:inline-block; cursor:pointer; border:1.5px solid var(--ink); background:transparent;}
+  .btn-solid{background:var(--ink); color:var(--paper);}
+  .btn-solid:hover{background:var(--copper); border-color:var(--copper);}
+  .btn-line{background:transparent; color:var(--ink);}
+  .btn-line:hover{border-color:var(--copper); color:var(--copper);}
+  .btn-sm{font-size:12.5px; padding:7px 12px;}
+
+  .hero-diagram{position:relative;}
+  .hero-diagram svg{width:100%; height:auto; display:block;}
+
+  .section-label{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .section-label .num{color:var(--copper);}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; padding-bottom:16px; border-bottom:1.5px solid var(--ink); margin-bottom:36px;}
+  .section-title{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:28px;}
+
+  .articles{padding:56px 0 24px;}
+  .article-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:28px;}
+  @media (max-width:900px){ .article-grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:620px){ .article-grid{grid-template-columns:1fr;} }
+
+  .empty-state{border:1.5px dashed var(--paper-line); padding:48px 24px; text-align:center; color:var(--ink-soft); font-size:14.5px; grid-column:1/-1;}
+  .empty-state b{color:var(--ink); display:block; font-family:'Space Grotesk', sans-serif; font-size:17px; margin-bottom:6px;}
+
+  .card{background:var(--white); border:1.5px solid var(--ink); padding:22px; display:flex; flex-direction:column; gap:12px; position:relative;}
+  .card .tag{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.03em; color:var(--pcb-green); width:fit-content; border:1px solid var(--pcb-green); padding:2px 8px; border-radius:var(--radius);}
+  .card .tag.copper{color:var(--copper); border-color:var(--copper);}
+  .card h3{font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:19px; line-height:1.25;}
+  .card p.excerpt{font-size:14.5px; color:var(--ink-soft); flex-grow:1;}
+  .card .body-full{font-size:14.5px; color:var(--ink); display:none; border-top:1px dashed var(--paper-line); padding-top:12px; white-space:pre-wrap;}
+  .card.open .body-full{display:block;}
+  .card.open p.excerpt{display:none;}
+  .card .meta{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); display:flex; justify-content:space-between; border-top:1px dashed var(--paper-line); padding-top:12px;}
+  .card .row-actions{display:flex; justify-content:space-between; align-items:center;}
+  .card .read{color:var(--copper); font-weight:500; text-decoration:none; font-size:13.5px; background:none; border:none; cursor:pointer; font-family:'IBM Plex Sans', sans-serif;}
+  .card .read:hover{text-decoration:underline;}
+  .card .del{background:none; border:none; color:var(--ink-soft); font-size:12px; cursor:pointer; font-family:'IBM Plex Mono', monospace;}
+  .card .del:hover{color:#B23B3B;}
+
+  .split{padding:56px 0; border-top:1.5px solid var(--ink);}
+  .split-grid{display:grid; grid-template-columns:0.9fr 1.1fr; gap:56px; align-items:start;}
+  @media (max-width:820px){ .split-grid{grid-template-columns:1fr;} }
+  .split h2{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:26px; margin-bottom:14px;}
+  .stat-row{display:flex; gap:36px; margin-top:28px; flex-wrap:wrap;}
+  .stat b{font-family:'Space Grotesk', sans-serif; font-size:30px; display:block; color:var(--copper);}
+  .stat span{font-size:12.5px; color:var(--ink-soft); font-family:'IBM Plex Mono', monospace;}
+  .about-list{list-style:none; display:flex; flex-direction:column; gap:16px;}
+  .about-list li{display:flex; gap:14px; align-items:flex-start; font-size:15px;}
+  .about-list .dot{width:8px; height:8px; margin-top:7px; flex-shrink:0; background:var(--pcb-green); transform:rotate(45deg);}
+
+  .callout{padding:44px 0; border-top:1.5px solid var(--ink); border-bottom:1.5px solid var(--ink); background: repeating-linear-gradient(135deg, var(--copper-soft) 0px, var(--copper-soft) 2px, transparent 2px, transparent 14px);}
+  .callout-inner{background:var(--paper); border:1.5px solid var(--ink); padding:36px; display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap;}
+  .callout-inner h3{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:23px; max-width:28ch;}
+  .callout-inner p{color:var(--ink-soft); margin-top:8px; max-width:40ch; font-size:14.5px;}
+
+  /* PAINEL DO EDITOR */
+  .editor{padding:56px 0 64px; border-top:1.5px solid var(--ink);}
+  .editor-box{border:1.5px solid var(--ink); background:var(--white); padding:32px;}
+  .editor-box h3{font-family:'Space Grotesk', sans-serif; font-size:22px; margin-bottom:6px;}
+  .editor-box > p{color:var(--ink-soft); font-size:14px; margin-bottom:24px; max-width:60ch;}
+  .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:700px){ .form-grid{grid-template-columns:1fr;} }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1/-1;}
+  .field label{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); letter-spacing:.02em;}
+  .field input, .field select, .field textarea{
+    border:1.5px solid var(--ink); background:var(--paper); padding:10px 12px;
+    font-family:'IBM Plex Sans', sans-serif; font-size:14px; border-radius:var(--radius); color:var(--ink);
+  }
+  .field textarea{resize:vertical; min-height:70px;}
+  .editor-actions{display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; align-items:center;}
+  .editor-note{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--pcb-green); min-height:16px;}
+  .editor-hint{font-size:13px; color:var(--ink-soft); margin-top:18px; padding-top:18px; border-top:1px dashed var(--paper-line);}
+
+  footer{border-top:1.5px solid var(--ink); padding:32px 0; }
+  .footer-grid{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;}
+  footer p{font-size:13px; color:var(--ink-soft);}
+  .footer-links{display:flex; gap:20px; font-size:13px;}
+  .footer-links a{text-decoration:none;}
+  .footer-links a:hover{color:var(--copper);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <span class="brand-mark">STEM/ROBÓTICA</span>
+      <div>
+        <h1>Jornal++</h1>
+        <p>notícias, projetos e aprendizados de stem &amp; robótica</p>
+      </div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="#materias">Matérias</a></li>
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#campeonato">Campeonato</a></li>
+        <li><a href="#editor">Publicar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero marked">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow-line"><span class="dash"></span> ciência, código e engenharia no dia a dia</div>
+      <h2>STEM e robótica contadas por quem tá com a mão na massa.</h2>
+      <p class="lede">Protótipos, código, experimentos e descobertas — um jornal sobre o processo de aprender ciência e tecnologia na prática, não só o resultado final.</p>
+      <div class="hero-actions">
+        <a href="#materias" class="btn btn-solid">Ler as matérias</a>
+        <a href="#editor" class="btn btn-line">Publicar matéria</a>
+      </div>
+    </div>
+    <div class="hero-diagram" aria-hidden="true">
+      <svg viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="379" height="319" fill="none" stroke="#172436" stroke-width="1.5"/>
+        <circle cx="190" cy="150" r="46" fill="none" stroke="#C97A2E" stroke-width="2"/>
+        <circle cx="190" cy="150" r="10" fill="#C97A2E"/>
+        <path d="M190 104 V60 M190 196 V240 M144 150 H100 M236 150 H280" stroke="#172436" stroke-width="1.5"/>
+        <circle cx="190" cy="60" r="5" fill="#2E6B52"/>
+        <circle cx="190" cy="240" r="5" fill="#2E6B52"/>
+        <circle cx="100" cy="150" r="5" fill="#2E6B52"/>
+        <circle cx="280" cy="150" r="5" fill="#2E6B52"/>
+        <path d="M100 150 L60 150 L60 90 L30 90" stroke="#172436" stroke-width="1.5" fill="none"/>
+        <circle cx="30" cy="90" r="4" fill="#172436"/>
+        <path d="M280 150 L320 150 L320 220 L350 220" stroke="#172436" stroke-width="1.5" fill="none"/>
+        <circle cx="350" cy="220" r="4" fill="#172436"/>
+        <path d="M190 60 L190 30 L240 30" stroke="#172436" stroke-width="1.5" fill="none"/>
+        <circle cx="240" cy="30" r="4" fill="#172436"/>
+        <text x="20" y="280" font-family="IBM Plex Mono, monospace" font-size="11" fill="#4C5C70">UNIDADE // TESTE 01</text>
+        <text x="20" y="296" font-family="IBM Plex Mono, monospace" font-size="11" fill="#4C5C70">SENSOR · ATUADOR · CTRL</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="articles wrap" id="materias">
+  <div class="section-head">
+    <div>
+      <div class="section-label"><span class="num">01</span> últimas publicações</div>
+      <h2 class="section-title">Matérias</h2>
+    </div>
+    <a href="#editor" class="btn btn-line btn-sm">+ Publicar matéria</a>
+  </div>
+  <div class="article-grid" id="articleGrid"></div>
+</section>
+
+<section class="split marked wrap" id="sobre">
+  <div class="split-grid">
+    <div>
+      <div class="section-label"><span class="num">02</span> sobre o jornal</div>
+      <h2>Sobre o Jornal++</h2>
+      <p style="color:var(--ink-soft); font-size:15px;">O Jornal++ existe pra registrar ciência e tecnologia acontecendo de verdade — experimentos, protótipos, código e as ideias por trás deles. Menos vitrine de resultado pronto, mais processo real de aprendizado.</p>
+      <div class="stat-row">
+        <div class="stat"><b id="statCount">0</b><span>MATÉRIAS PUBLICADAS</span></div>
+        <div class="stat"><b>STEM</b><span>CIÊNCIA E TECNOLOGIA</span></div>
+        <div class="stat"><b>BH</b><span>BELO HORIZONTE</span></div>
+      </div>
+    </div>
+    <div>
+      <ul class="about-list">
+        <li><span class="dot"></span> <span>Cobrimos robótica, programação, engenharia e ciência de forma acessível.</span></li>
+        <li><span class="dot"></span> <span>Priorizamos processo sobre resultado — um protótipo que falhou ensina tanto quanto um que funcionou.</span></li>
+        <li><span class="dot"></span> <span>Convidamos outras pessoas e projetos pra contar como resolveram problemas parecidos.</span></li>
+        <li><span class="dot"></span> <span>Tudo aqui vira referência pra quem tá começando a explorar essas áreas.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="callout" id="campeonato">
+  <div class="wrap">
+    <div class="callout-inner">
+      <div>
+        <h3>Campeonato de Code Combat na escola — inscrições em breve</h3>
+        <p>Um torneio presencial de programação pra apresentar robótica e lógica pra outros alunos. O Jornal++ vai cobrir cada etapa da organização.</p>
+      </div>
+      <a href="#editor" class="btn btn-solid">Publicar sobre o campeonato</a>
+    </div>
+  </div>
+</section>
+
+<section class="editor wrap" id="editor">
+  <div class="section-label"><span class="num">03</span> painel do editor</div>
+  <div class="editor-box">
+    <h3>Publicar nova matéria</h3>
+    <p>Preencha os campos, escreva o texto e clique em "Baixar site atualizado". Isso gera um novo <code>index.html</code> com a matéria já incluída — é esse arquivo que você sobe no lugar do atual no seu hospedeiro.</p>
+    <form id="articleForm">
+      <div class="form-grid">
+        <div class="field">
+          <label for="fTitle">Título</label>
+          <input id="fTitle" type="text" required placeholder="Ex: Como um sensor ultrassônico realmente funciona">
+        </div>
+        <div class="field">
+          <label for="fTag">Categoria</label>
+          <select id="fTag">
+            <option value="hardware">hardware</option>
+            <option value="programação">programação</option>
+            <option value="gestão">gestão</option>
+            <option value="engenharia">engenharia</option>
+            <option value="comunidade">comunidade</option>
+            <option value="evento">evento</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fDate">Data</label>
+          <input id="fDate" type="date">
+        </div>
+        <div class="field">
+          <label for="fRead">Tempo de leitura (min)</label>
+          <input id="fRead" type="number" min="1" value="5">
+        </div>
+        <div class="field full">
+          <label for="fExcerpt">Resumo curto (aparece no card)</label>
+          <textarea id="fExcerpt" required placeholder="Duas linhas resumindo a matéria."></textarea>
+        </div>
+        <div class="field full">
+          <label for="fBody">Texto completo</label>
+          <textarea id="fBody" required style="min-height:160px" placeholder="O texto inteiro da matéria. Aparece quando alguém clica em 'ler'."></textarea>
+        </div>
+      </div>
+      <div class="editor-actions">
+        <button type="submit" class="btn btn-solid">Adicionar matéria</button>
+        <button type="button" id="downloadBtn" class="btn btn-line">⬇ Baixar site atualizado</button>
+        <span class="editor-note" id="editorNote"></span>
+      </div>
+    </form>
+    <p class="editor-hint">As matérias ficam salvas neste navegador enquanto você trabalha (rascunho local). Mas só viram parte do site de verdade quando você baixa o arquivo atualizado e o publica no seu hospedeiro — feche esta aba sem baixar e o rascunho continua aqui na próxima visita, só não estará no ar.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-grid">
+    <p>Jornal++ · STEM & Robótica · Belo Horizonte</p>
+    <div class="footer-links">
+      <a href="#materias">Matérias</a>
+      <a href="#sobre">Sobre</a>
+      <a href="#editor">Publicar</a>
+    </div>
+  </div>
+</footer>
+
+<script id="articles-data" type="application/json">[]</script>
+<script>
+  const dataEl = document.getElementById('articles-data');
+  let articles = [];
+  try {
+    const saved = localStorage.getItem('esquema_articles');
+    articles = saved ? JSON.parse(saved) : JSON.parse(dataEl.textContent || '[]');
+  } catch(e) { articles = []; }
+
+  const grid = document.getElementById('articleGrid');
+  const statCount = document.getElementById('statCount');
+  const monthsPt = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  function fmtDate(iso){
+    if(!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d} ${monthsPt[parseInt(m,10)-1]}`;
+  }
+
+  function render(){
+    grid.innerHTML = '';
+    statCount.textContent = articles.length;
+    if(articles.length === 0){
+      grid.innerHTML = `<div class="empty-state"><b>Nenhuma matéria publicada ainda</b>Use o painel do editor abaixo para escrever a primeira. Ela aparece aqui assim que você adicionar.</div>`;
+      return;
+    }
+    articles.slice().reverse().forEach((a, revIdx) => {
+      const idx = articles.length - 1 - revIdx;
+      const copperTags = ['programação','engenharia','evento'];
+      const tagClass = copperTags.includes(a.tag) ? 'tag copper' : 'tag';
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `
+        <span class="${tagClass}">${a.tag}</span>
+        <h3>${a.title}</h3>
+        <p class="excerpt">${a.excerpt}</p>
+        <div class="body-full">${a.body}</div>
+        <div class="meta row-actions">
+          <span>${fmtDate(a.date)} · ${a.read} min</span>
+          <span>
+            <button type="button" class="read" data-action="toggle" data-idx="${idx}">ler →</button>
+            <button type="button" class="del" data-action="del" data-idx="${idx}" title="Remover matéria">remover</button>
+          </span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    const idx = parseInt(btn.dataset.idx, 10);
+    if(btn.dataset.action === 'toggle'){
+      btn.closest('.card').classList.toggle('open');
+      btn.textContent = btn.closest('.card').classList.contains('open') ? 'fechar' : 'ler →';
+    } else if(btn.dataset.action === 'del'){
+      if(confirm('Remover esta matéria do rascunho?')){
+        articles.splice(idx, 1);
+        persist();
+        render();
+      }
+    }
+  });
+
+  function persist(){
+    localStorage.setItem('esquema_articles', JSON.stringify(articles));
+    dataEl.textContent = JSON.stringify(articles);
+  }
+
+  document.getElementById('fDate').valueAsDate = new Date();
+
+  document.getElementById('articleForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const article = {
+      title: document.getElementById('fTitle').value.trim(),
+      tag: document.getElementById('fTag').value,
+      date: document.getElementById('fDate').value,
+      read: document.getElementById('fRead').value || '5',
+      excerpt: document.getElementById('fExcerpt').value.trim(),
+      body: document.getElementById('fBody').value.trim()
+    };
+    articles.push(article);
+    persist();
+    render();
+    e.target.reset();
+    document.getElementById('fDate').valueAsDate = new Date();
+    const note = document.getElementById('editorNote');
+    note.textContent = 'Matéria adicionada ao rascunho. Não esqueça de baixar o site atualizado.';
+    setTimeout(() => note.textContent = '', 5000);
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    document.querySelectorAll('.card.open').forEach(c => c.classList.remove('open'));
+    render();
+    dataEl.textContent = JSON.stringify(articles);
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([html], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    a.click();
+    URL.revokeObjectURL(url);
+    const note = document.getElementById('editorNote');
+    note.textContent = 'Baixado — suba esse arquivo no lugar do atual no seu hospedeiro.';
+    setTimeout(() => note.textContent = '', 6000);
+  });
+
+  render();
+</script>
+
+</body>
+</html>
